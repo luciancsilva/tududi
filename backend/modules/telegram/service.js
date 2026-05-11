@@ -10,13 +10,15 @@ const {
     UnauthorizedError,
 } = require('../../shared/errors');
 
-async function sendWelcomeMessage(token, chatId) {
+async function sendWelcomeMessage(token, chatId, text) {
     return new Promise((resolve) => {
-        const welcomeText = `🎉 Welcome to tududi!\n\nYour personal task management bot is now connected and ready to help!\n\n📝 Simply send me any message and I'll add it to your tududi inbox as an item.\n\n✨ Commands:\n• /help - Show help information\n• Just type any text - Add it as an inbox item\n\nLet's get organized! 🚀`;
+        const messageText =
+            text ||
+            `🎉 Welcome to tududi!\n\nYour personal task management bot is now connected and ready to help!\n\n📝 Simply send me any message and I'll add it to your tududi inbox as an item.\n\n✨ Commands:\n• /help - Show help information\n• Just type any text - Add it as an inbox item\n\nLet's get organized! 🚀`;
 
         const postData = JSON.stringify({
             chat_id: chatId,
-            text: welcomeText,
+            text: messageText,
         });
 
         const url = `https://api.telegram.org/bot${token}/sendMessage`;
@@ -146,6 +148,31 @@ class TelegramService {
             message: 'Telegram bot token updated successfully',
             bot: botInfo,
         };
+    }
+
+    async sendTest(userId, text) {
+        const user = await User.findByPk(userId);
+        if (!user || !user.telegram_bot_token) {
+            throw new ValidationError('Telegram bot token not set.');
+        }
+
+        if (!user.telegram_chat_id) {
+            throw new ValidationError(
+                'Telegram chat ID not set. Start the bot first.'
+            );
+        }
+
+        const success = await sendWelcomeMessage(
+            user.telegram_bot_token,
+            user.telegram_chat_id,
+            text || '✅ Test message from tududi!'
+        );
+
+        if (success) {
+            return { success: true, message: 'Test message sent successfully' };
+        } else {
+            throw new Error('Failed to send test message.');
+        }
     }
 
     async sendWelcome(userId, chatId) {

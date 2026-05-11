@@ -75,6 +75,26 @@ const telegramController = {
         }
     },
 
+    async testMessage(req, res, next) {
+        try {
+            const userId = getAuthenticatedUserId(req);
+            if (!userId) {
+                return res
+                    .status(401)
+                    .json({ error: 'Authentication required' });
+            }
+            const { text } = req.body;
+            const result = await telegramService.sendTest(userId, text);
+            res.json(result);
+        } catch (error) {
+            if (error.statusCode === 400) {
+                return res.status(400).json({ error: error.message });
+            }
+            logError('Error sending Telegram test message:', error);
+            res.status(500).json({ error: 'Failed to send test message.' });
+        }
+    },
+
     async sendWelcome(req, res, next) {
         try {
             const userId = getAuthenticatedUserId(req);

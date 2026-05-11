@@ -9,5 +9,6 @@ router.post('/telegram/stop-polling', telegramController.stopPolling);
 router.get('/telegram/polling-status', telegramController.getPollingStatus);
 router.post('/telegram/setup', telegramController.setup);
 router.post('/telegram/send-welcome', telegramController.sendWelcome);
+router.post('/telegram/test/:userId', telegramController.testMessage);
 
 module.exports = router;
